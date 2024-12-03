@@ -56,7 +56,7 @@ def notify_action(index, price, zone_type, zone_price, action, nearest_strike):
     """Notify the action to be taken when price approaches a zone."""
     message = (
         f"ALERT: {index} current price {price:.2f} is near {zone_type} zone at {zone_price:.2f}. "
-        f"Suggested action: Buy {action}."
+        f"Suggested action: Buy {action}. "
         f"Choose strike price : {nearest_strike}"
     )
     print(message)
