@@ -51,13 +51,16 @@ def send_telegram_message(message):
 def notify_action(index, price, zone_type, zone_price, action, nearest_strike, ema):
     """Notify the action to be taken when price approaches a zone."""
     message = (
-        f"**** DEMAND and SUPPLY ZONE ALERT ****\n"
+        f"=====================\n"
+        f"DEMAND & SUPPLY ZONES\n"
+        f"=====================\n"
         f"ALERT: {index}\n"
         f"Current Price: {price:.2f}\n"
         f"Near {zone_type} Zone at: {zone_price:.2f}\n"
         f"21 EMA: {ema:.2f}\n"
         f"Suggested Action: Buy {action}\n"
         f"Strike Price: {nearest_strike}\n"
+        f"=====================\n"
     )
     print(message)
     send_telegram_message(message)
@@ -66,8 +69,8 @@ def check_market_conditions():
     """Check market conditions and send alerts."""
     IST = pytz.timezone("Asia/Kolkata")
     current_time = datetime.now(IST).time()
-    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("15:15", "%H:%M").time():
-        print("Market is open in IST timezone")
+    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("14:15", "%H:%M").time():
+        print("Market is open in IST timezone : ", current_time)
         for index in INDEXES:
             # Fetch historical data
             data = yf.download(index, period="1mo", interval="5m")
@@ -88,7 +91,7 @@ def check_market_conditions():
             live_price = round(get_live_price(data),2)
             step = 50 if index == "^NSEI" else 100
             nearest_strike = get_nearest_strike_price(live_price, step)
-            
+            print("current_market_price : ", live_price)
             # Check proximity to zones and EMA conditions
             if live_price >= supply_zone * (1 - ZONE_BUFFER) and live_price < ema:
                 notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema)
