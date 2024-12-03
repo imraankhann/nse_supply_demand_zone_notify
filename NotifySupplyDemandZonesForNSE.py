@@ -12,8 +12,11 @@ import pytz
 SUPPLY_DEMAND_ZONE_WINDOW = 10  # Look-back period to calculate zones
 ZONE_BUFFER = 0.001            # 0.3% buffer to define proximity
 INDEXES = ["^NSEI", "^NSEBANK"]  # Nifty 50 and Bank Nifty and Nifty Finance Yahoo Finance Tickers  ,"NIFTY_FIN_SERVICE.NS"
-TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM"  # Replace with your Telegram bot token
-TELEGRAM_CHAT_ID = "-703180529"      # Replace with your Telegram chat ID
+# TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM"  # Replace with your Telegram bot token
+# TELEGRAM_CHAT_ID = "-703180529"      # Replace with your Telegram chat ID
+
+TELEGRAM_BOT_TOKEN = "Token"  # Replace with your Telegram bot token
+TELEGRAM_CHAT_ID = "-ChatID"      # Replace with your Telegram chat ID
 
 def calculate_zones(data, window=10):
     """Calculate supply and demand zones based on historical data."""
@@ -27,6 +30,19 @@ def get_live_price(data):
     """Fetch the current live price of an index from the last row of data."""
     return float(data['Close'].iloc[-1])
 
+def get_nearest_strike_price(index_price, step):
+    """
+    Calculate the nearest strike price for a given index price.
+    
+    Parameters:
+        index_price (float): Current price of the index.
+        step (int): Step interval for strike prices. Default is 50.
+    
+    Returns:
+        int: The nearest strike price.
+    """
+    return round(index_price / step) * step
+
 def send_telegram_message(message):
     """Send a notification message to Telegram."""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -36,11 +52,12 @@ def send_telegram_message(message):
     except Exception as e:
         print(f"Failed to send Telegram message: {e}")
 
-def notify_action(index, price, zone_type, zone_price, action):
+def notify_action(index, price, zone_type, zone_price, action, nearest_strike):
     """Notify the action to be taken when price approaches a zone."""
     message = (
         f"ALERT: {index} current price {price:.2f} is near {zone_type} zone at {zone_price:.2f}. "
         f"Suggested action: Buy {action}."
+        f"Choose strike price : {nearest_strike}"
     )
     print(message)
     send_telegram_message(message)
@@ -65,17 +82,21 @@ def check_market_conditions():
             
             # Fetch live price
             live_price = get_live_price(data)
+            if index == "^NSEI":
+                nearest_strike = get_nearest_strike_price(live_price,step=50)
+            else:
+                nearest_strike = get_nearest_strike_price(live_price,step=100)
             
             # Check proximity to zones
             if live_price >= supply_zone * (1 - ZONE_BUFFER):
-                notify_action(index, live_price, "supply", supply_zone, "PE")
+                notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike)
             elif live_price <= demand_zone * (1 + ZONE_BUFFER):
-                notify_action(index, live_price, "demand", demand_zone, "CE")
+                notify_action(index, live_price, "demand", demand_zone, "CE",nearest_strike)
     else:
         print("Market is closed. Alerts will resume during market hours.")
 
 # Schedule the job to run every 3 minutes
-schedule.every(3).minutes.do(check_market_conditions)
+schedule.every(0.5).minutes.do(check_market_conditions)
 
 if __name__ == "__main__":
     now_utc = datetime.now(timezone('UTC'))
