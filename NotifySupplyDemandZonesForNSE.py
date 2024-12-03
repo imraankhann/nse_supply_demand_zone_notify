@@ -6,6 +6,7 @@ from datetime import datetime
 import time
 from datetime import datetime
 from pytz import timezone
+import pytz
 
 # Parameters
 SUPPLY_DEMAND_ZONE_WINDOW = 10  # Look-back period to calculate zones
@@ -46,8 +47,10 @@ def notify_action(index, price, zone_type, zone_price, action):
 
 def check_market_conditions():
     """Check market conditions and send alerts."""
-    current_time = datetime.now().time()
+    IST = pytz.timezone("Asia/Kolkata")
+    current_time = datetime.now(IST).time()
     if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("15:15", "%H:%M").time():
+        print("Market is open in IST timezone : ", current_time)
         for index in INDEXES:
             # Fetch historical data
             data = yf.download(index, period="1mo", interval="1h")
