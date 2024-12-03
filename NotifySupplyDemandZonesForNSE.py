@@ -12,11 +12,11 @@ import pytz
 SUPPLY_DEMAND_ZONE_WINDOW = 10  # Look-back period to calculate zones
 ZONE_BUFFER = 0.001            # 0.3% buffer to define proximity
 INDEXES = ["^NSEI", "^NSEBANK"]  # Nifty 50 and Bank Nifty and Nifty Finance Yahoo Finance Tickers  ,"NIFTY_FIN_SERVICE.NS"
-# TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM"  # Replace with your Telegram bot token
-# TELEGRAM_CHAT_ID = "-703180529"      # Replace with your Telegram chat ID
+TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM" # Confidential
+TELEGRAM_CHAT_ID = "-703180529"
 
-TELEGRAM_BOT_TOKEN = "Token"  # Replace with your Telegram bot token
-TELEGRAM_CHAT_ID = "-ChatID"      # Replace with your Telegram chat ID
+# TELEGRAM_BOT_TOKEN = "Token"  # Replace with your Telegram bot token
+# TELEGRAM_CHAT_ID = "-ChatID"      # Replace with your Telegram chat ID
 
 def calculate_zones(data, window=10):
     """Calculate supply and demand zones based on historical data."""
