@@ -69,7 +69,7 @@ def check_market_conditions():
     """Check market conditions and send alerts."""
     IST = pytz.timezone("Asia/Kolkata")
     current_time = datetime.now(IST).time()
-    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("14:15", "%H:%M").time():
+    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("14:45", "%H:%M").time():
         print("Market is open in IST timezone : ", current_time)
         for index in INDEXES:
             # Fetch historical data
@@ -100,15 +100,8 @@ def check_market_conditions():
             else:
                 print(f"{index} is not near any zone or doesn't satisfy EMA condition.")
     else:
-        print("Market is closed. Alerts will resume during market hours.")
-
-# # Schedule the job to run every 3 minutes
-# schedule.every(1).minutes.do(check_market_conditions)
-
-# if __name__ == "__main__":
-#     while True:
-#         schedule.run_pending()
-#         time.sleep(6)  # Wait for a minute before the next iteration
+        print("Market is closed. Alerts will resume during market hours exiting now..!")
+        exit()
 
 
 if __name__ == "__main__":
@@ -118,7 +111,7 @@ if __name__ == "__main__":
     intTime = int(now_asia.strftime("%H"))  # Update hour dynamically
 
     print(f"Current Time: {current_time} | Monitoring Demand And Supply Zones...")
-    while intTime>=9 and intTime <=14:
+    while intTime>=9 and intTime <=15:
         check_market_conditions()
         #schedule.run_pending()
         if intTime >= 14:  # Exit after 2 PM
