@@ -17,8 +17,10 @@ SUPPLY_DEMAND_ZONE_WINDOW = 10  # Look-back period to calculate zones
 ZONE_BUFFER = 0.002            # 0.3% buffer to define proximity
 INDEXES = ["^NSEI", "^NSEBANK"]  # Nifty 50 and Bank Nifty and Nifty Finance Yahoo Finance Ticker
 EMA_PERIOD = 21
-TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM" # Confidential
-TELEGRAM_CHAT_ID = "-703180529"
+# TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM" # Confidential
+# TELEGRAM_CHAT_ID = "-703180529"
+TELEGRAM_BOT_TOKEN = "5817461626:AAHp1IIIMkQGWFTqIuu84lYOoxlO8KS7CZo"
+TELEGRAM_CHAT_ID = "@swingTradeScreenedStocks"
 RSI_PERIOD = 14
 RSI_OVERBOUGHT = 70
 RSI_OVERSOLD = 30
@@ -141,7 +143,6 @@ if __name__ == "__main__":
     now_asia = now_utc.astimezone(timezone('Asia/Kolkata'))
     current_time = now_asia.strftime("%H:%M:%S")
     intTime = int(now_asia.strftime("%H"))  # Update hour dynamically
-
     print(f"Current Time: {current_time} | Monitoring Demand And Supply Zones...")
     while intTime>=9 and intTime <=14:
         check_market_conditions()
