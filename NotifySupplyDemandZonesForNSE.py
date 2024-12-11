@@ -9,6 +9,8 @@ import time
 from datetime import datetime
 from pytz import timezone
 import pytz
+from ta.momentum import RSIIndicator
+import pandas as pd
 
 # Parameters
 SUPPLY_DEMAND_ZONE_WINDOW = 10  # Look-back period to calculate zones
@@ -17,6 +19,10 @@ INDEXES = ["^NSEI", "^NSEBANK"]  # Nifty 50 and Bank Nifty and Nifty Finance Yah
 EMA_PERIOD = 21
 TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM" # Confidential
 TELEGRAM_CHAT_ID = "-703180529"
+RSI_PERIOD = 14
+RSI_OVERBOUGHT = 70
+RSI_OVERSOLD = 30
+
 
 def calculate_zones(data, window=10):
     """Calculate supply and demand zones based on historical data."""
@@ -39,6 +45,28 @@ def calculate_ema(data, period=21):
     data[f"EMA_{period}"] = data['Close'].ewm(span=period, adjust=False).mean()
     return data
 
+def calculate_rsi(data, period=14):
+    """Calculate RSI for the data."""
+    if 'Close' not in data.columns:
+        raise ValueError("Input data must have a 'Close' column.")
+
+    # Use the 'Close' column to calculate RSI
+    close = data['Close']
+
+    delta = close.diff()
+    dUp = delta.clip(lower=0)  # Keep only positive changes
+    dDown = -delta.clip(upper=0)  # Keep only negative changes (convert to positive)
+
+    RolUp = dUp.rolling(window=period).mean()
+    RolDown = dDown.rolling(window=period).mean()
+
+    RS = RolUp / RolDown
+    rsi = 100.0 - (100.0 / (1.0 + RS))
+
+    data['RSI'] = rsi  # Add RSI to the DataFrame
+    return data
+
+
 def send_telegram_message(message):
     """Send a notification message to Telegram."""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -48,7 +76,7 @@ def send_telegram_message(message):
     except Exception as e:
         print(f"Failed to send Telegram message: {e}")
 
-def notify_action(index, price, zone_type, zone_price, action, nearest_strike, ema):
+def notify_action(index, price, zone_type, zone_price, action, nearest_strike, ema,rsi):
     """Notify the action to be taken when price approaches a zone."""
     message = (
         f"=====================\n"
@@ -58,6 +86,7 @@ def notify_action(index, price, zone_type, zone_price, action, nearest_strike, e
         f"Current Price: {price:.2f}\n"
         f"Near {zone_type} Zone at: {zone_price:.2f}\n"
         f"21 EMA: {ema:.2f}\n"
+        f"RSI: {rsi:.2f}\n"
         f"Suggested Action: Buy {action}\n"
         f"Strike Price: {nearest_strike}\n"
         f"=====================\n"
@@ -81,9 +110,12 @@ def check_market_conditions():
                 continue
             
             # Calculate 21 EMA
-            data = calculate_ema(data, EMA_PERIOD)
-            ema = round(data[f"EMA_{EMA_PERIOD}"].iloc[-1],2)
-            print("EMA21 : ", ema)
+            ema_data = calculate_ema(data, EMA_PERIOD)
+            ema = round(ema_data[f"EMA_{EMA_PERIOD}"].iloc[-1],2)
+            print(f"EMA21 for {index} : ", ema)
+            rsi_data = calculate_rsi(data,14)
+            rsi = round(rsi_data['RSI'].iloc[-1], 2)
+            print(f"RSI for {index}: ", rsi)
             # Calculate supply and demand zones
             supply_zone, demand_zone = calculate_zones(data, window=SUPPLY_DEMAND_ZONE_WINDOW)
             
@@ -91,12 +123,12 @@ def check_market_conditions():
             live_price = round(get_live_price(data),2)
             step = 50 if index == "^NSEI" else 100
             nearest_strike = get_nearest_strike_price(live_price, step)
-            print("current_market_price : ", live_price)
+            print(f"current_market_price of {index}: ", live_price)
             # Check proximity to zones and EMA conditions
-            if live_price >= supply_zone * (1 - ZONE_BUFFER) and live_price < ema:
-                notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema)
-            elif live_price <= demand_zone * (1 + ZONE_BUFFER) and live_price > ema:
-                notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema)
+            if live_price >= supply_zone * (1 - ZONE_BUFFER) and live_price < ema and rsi > RSI_OVERBOUGHT:
+                notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, rsi)
+            elif live_price <= demand_zone * (1 + ZONE_BUFFER) and live_price > ema and rsi < RSI_OVERSOLD:
+                notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema, rsi)
             else:
                 print(f"{index} is not near any zone or doesn't satisfy EMA condition.")
     else:
@@ -111,7 +143,7 @@ if __name__ == "__main__":
     intTime = int(now_asia.strftime("%H"))  # Update hour dynamically
 
     print(f"Current Time: {current_time} | Monitoring Demand And Supply Zones...")
-    while intTime>=9 and intTime <=15:
+    while intTime>=9 and intTime <=14:
         check_market_conditions()
         #schedule.run_pending()
         if intTime >= 14:  # Exit after 2 PM
