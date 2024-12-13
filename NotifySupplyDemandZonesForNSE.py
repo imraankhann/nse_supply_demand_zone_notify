@@ -47,6 +47,11 @@ def calculate_ema(data, period=21):
 
 def calculate_rsi(data, period=14):
     """Calculate RSI for the data."""
+    ist = pytz.timezone("Asia/Kolkata")
+    if data.index.tzinfo is None:
+        data.index = data.index.tz_localize("UTC").tz_convert(ist)
+    else:
+        data.index = data.index.tz_convert(ist)
     if 'Close' not in data.columns:
         raise ValueError("Input data must have a 'Close' column.")
 
@@ -64,6 +69,7 @@ def calculate_rsi(data, period=14):
     rsi = 100.0 - (100.0 / (1.0 + RS))
 
     data['RSI'] = rsi  # Add RSI to the DataFrame
+    print("RSI DATA : ", data['RSI'])
     return data
 
 
@@ -114,6 +120,7 @@ def check_market_conditions():
             ema = round(ema_data[f"EMA_{EMA_PERIOD}"].iloc[-1],2)
             rsi_data = calculate_rsi(data,14)
             rsi = round(rsi_data['RSI'].iloc[-1], 2)
+            print("RSI : ",rsi)
             # Calculate supply and demand zones
             supply_zone, demand_zone = calculate_zones(data, window=SUPPLY_DEMAND_ZONE_WINDOW)
             positive_zone_buffer = round(demand_zone * (1 + ZONE_BUFFER),2)
