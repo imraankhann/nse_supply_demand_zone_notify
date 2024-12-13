@@ -69,7 +69,7 @@ def calculate_rsi(data, period=14):
     rsi = 100.0 - (100.0 / (1.0 + RS))
 
     data['RSI'] = rsi  # Add RSI to the DataFrame
-    print("RSI DATA : ", data['RSI'])
+    #print("RSI DATA : ", data['RSI'])
     return data
 
 
