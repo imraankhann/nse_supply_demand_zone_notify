@@ -14,7 +14,7 @@ import pandas as pd
 
 # Parameters
 SUPPLY_DEMAND_ZONE_WINDOW = 10  # Look-back period to calculate zones
-ZONE_BUFFER = 0.002            # 0.3% buffer to define proximity
+ZONE_BUFFER = 0.0004            # 0.04% buffer to define proximity
 INDEXES = ["^NSEI", "^NSEBANK"]  # Nifty 50 and Bank Nifty and Nifty Finance Yahoo Finance Ticker
 EMA_PERIOD = 21
 # TELEGRAM_BOT_TOKEN = "5771720913:AAH0A70f0BPtPjrOCTrhAb9LR7IGFBVt-oM" # Confidential
@@ -100,7 +100,7 @@ def check_market_conditions():
     """Check market conditions and send alerts."""
     IST = pytz.timezone("Asia/Kolkata")
     current_time = datetime.now(IST).time()
-    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("14:45", "%H:%M").time():
+    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("23:45", "%H:%M").time():
         print("Market is open in IST timezone : ", current_time)
         for index in INDEXES:
             # Fetch historical data
@@ -120,16 +120,18 @@ def check_market_conditions():
             print(f"RSI for {index}: ", rsi)
             # Calculate supply and demand zones
             supply_zone, demand_zone = calculate_zones(data, window=SUPPLY_DEMAND_ZONE_WINDOW)
-            
+            positive_zone_buffer = 1 + ZONE_BUFFER
+            negative_zone_buffer = 1 - ZONE_BUFFER
+
             # Fetch live price
             live_price = round(get_live_price(data),2)
             step = 50 if index == "^NSEI" else 100
             nearest_strike = get_nearest_strike_price(live_price, step)
             print(f"current_market_price of {index}: ", live_price)
             # Check proximity to zones and EMA conditions
-            if live_price >= supply_zone * (1 - ZONE_BUFFER) and live_price < ema and rsi > RSI_OVERBOUGHT:
+            if live_price in (supply_zone , negative_zone_buffer) and live_price < ema and rsi > RSI_OVERBOUGHT:
                 notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, rsi)
-            elif live_price <= demand_zone * (1 + ZONE_BUFFER) and live_price > ema and rsi < RSI_OVERSOLD:
+            elif live_price in (demand_zone , positive_zone_buffer) and live_price > ema and rsi < RSI_OVERSOLD:
                 notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema, rsi)
             else:
                 print(f"{index} is not near any zone or doesn't satisfy EMA condition.")
@@ -144,10 +146,10 @@ if __name__ == "__main__":
     current_time = now_asia.strftime("%H:%M:%S")
     intTime = int(now_asia.strftime("%H"))  # Update hour dynamically
     print(f"Current Time: {current_time} | Monitoring Demand And Supply Zones...")
-    while intTime>=9 and intTime <=14:
+    while intTime>=9 and intTime <=23:
         check_market_conditions()
         #schedule.run_pending()
-        if intTime >= 14:  # Exit after 2 PM
+        if intTime >= 23:  # Exit after 2 PM
             print("Market is closed. Program exiting at:", current_time)
             break
         time.sleep(180)
