@@ -123,6 +123,7 @@ def check_market_conditions():
             live_price = round(get_live_price(data),2)
             step = 50 if index == "^NSEI" else 100
             nearest_strike = get_nearest_strike_price(live_price, step)
+            print("********************* DATA PRINT STARTED ***********************")
             data_dic = {"Index =":index,
                         "currentTime =":current_time,
                         "cmp =": live_price,
@@ -134,6 +135,7 @@ def check_market_conditions():
                         }
             for key,value in data_dic.items():
                 print(key,'\t',value)
+            print("********************* DATA PRINT ENDED ***********************")
     
             # Check proximity to zones and EMA conditions
             if live_price in (supply_zone , negative_zone_buffer) and live_price < ema and rsi > RSI_OVERBOUGHT:
