@@ -30,8 +30,6 @@ def calculate_zones(data, window=10):
     """Calculate supply and demand zones based on historical data."""
     supply_zone = round(float(data['High'].rolling(window=window).max().iloc[-1]),2)
     demand_zone = round(float(data['Low'].rolling(window=window).min().iloc[-1]),2)
-    print("Supply Zone : ", supply_zone)
-    print("Demand Zone : ", demand_zone)
     return supply_zone, demand_zone
 
 def get_live_price(data):
@@ -114,10 +112,8 @@ def check_market_conditions():
             # Calculate 21 EMA
             ema_data = calculate_ema(data, EMA_PERIOD)
             ema = round(ema_data[f"EMA_{EMA_PERIOD}"].iloc[-1],2)
-            print(f"EMA21 for {index} : ", ema)
             rsi_data = calculate_rsi(data,14)
             rsi = round(rsi_data['RSI'].iloc[-1], 2)
-            print(f"RSI for {index}: ", rsi)
             # Calculate supply and demand zones
             supply_zone, demand_zone = calculate_zones(data, window=SUPPLY_DEMAND_ZONE_WINDOW)
             positive_zone_buffer = round(demand_zone * (1 + ZONE_BUFFER),2)
@@ -127,7 +123,18 @@ def check_market_conditions():
             live_price = round(get_live_price(data),2)
             step = 50 if index == "^NSEI" else 100
             nearest_strike = get_nearest_strike_price(live_price, step)
-            print(f"current_market_price of {index}: ", live_price)
+            data_dic = {"Index =":index,
+                        "currentTime =":current_time,
+                        "cmp =": live_price,
+                        "negative_buffer_zone =": negative_zone_buffer,
+                        "demand_zone =":demand_zone,
+                        "positive_buffer_zone =":positive_zone_buffer,
+                        "21EMA =":float(ema),
+                        "RSI =":float(rsi)
+                        }
+            for key,value in data_dic.items():
+                print(key,'\t',value)
+    
             # Check proximity to zones and EMA conditions
             if live_price in (supply_zone , negative_zone_buffer) and live_price < ema and rsi > RSI_OVERBOUGHT:
                 notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, rsi)
