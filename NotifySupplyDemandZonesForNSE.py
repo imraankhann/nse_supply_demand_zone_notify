@@ -123,8 +123,8 @@ def check_market_conditions():
             ema_data = calculate_ema(data, EMA_PERIOD)
             ema = round(ema_data[f"EMA_{EMA_PERIOD}"].iloc[-1],2)
             rsi_data = calculate_rsi(data,14)
-            rsi = round(rsi_data['RSI'].iloc[-1], 2)
-            correct_rsi = rsi - 15
+            correct_rsi = round(rsi_data['RSI'].iloc[-1], 2)
+            #correct_rsi = rsi - 15
             print("RSI : ",correct_rsi)
             # Calculate supply and demand zones
             supply_zone, demand_zone = calculate_zones(data, window=SUPPLY_DEMAND_ZONE_WINDOW)
