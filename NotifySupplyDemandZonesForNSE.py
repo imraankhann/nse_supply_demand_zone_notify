@@ -84,7 +84,11 @@ def send_telegram_message(message):
 
 def notify_action(index, price, zone_type, zone_price, action, nearest_strike, ema,rsi):
     """Notify the action to be taken when price approaches a zone."""
+    utc_now = datetime.now(timezone('UTC'))
+    ist_now = utc_now.astimezone(timezone('Asia/Kolkata'))
+    timestamp = ist_now.strftime("%d-%m-%Y %H:%M")
     message = (
+        f"**** NOTIFIED AT : {timestamp} ****\n"
         f"=====================\n"
         f"DEMAND & SUPPLY ZONES\n"
         f"=====================\n"
