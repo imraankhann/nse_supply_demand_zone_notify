@@ -130,6 +130,7 @@ def check_market_conditions():
                         "negative_buffer_zone =": negative_zone_buffer,
                         "demand_zone =":demand_zone,
                         "positive_buffer_zone =":positive_zone_buffer,
+                        "supply_zone =":supply_zone,
                         "21EMA =":float(ema),
                         "RSI =":float(rsi)
                         }
