@@ -30,6 +30,8 @@ def calculate_zones(data, window=10):
     """Calculate supply and demand zones based on historical data."""
     supply_zone = round(float(data['High'].rolling(window=window).max().iloc[-1]),2)
     demand_zone = round(float(data['Low'].rolling(window=window).min().iloc[-1]),2)
+    # supply_zone = round(float(data['High'].rolling(window=window).max().iloc[-1]), 2)
+    # demand_zone = round(float(data['Low'].rolling(window=window).max().iloc[-1]), 2)
     return supply_zone, demand_zone
 
 def get_live_price(data):
@@ -152,9 +154,9 @@ def check_market_conditions():
     
             # Check proximity to zones and EMA conditions
             if live_price in (supply_zone , negative_zone_buffer) and live_price < ema and correct_rsi > RSI_OVERBOUGHT:
-                notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, rsi)
+                notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, correct_rsi)
             elif live_price in (demand_zone , positive_zone_buffer) and live_price > ema and correct_rsi < RSI_OVERSOLD:
-                notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema, rsi)
+                notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema, correct_rsi)
             else:
                 print(f"{index} is not near any zone or doesn't satisfy EMA condition.")
     else:
