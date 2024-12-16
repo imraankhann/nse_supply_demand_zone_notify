@@ -22,8 +22,8 @@ EMA_PERIOD = 21
 TELEGRAM_BOT_TOKEN = "5817461626:AAHp1IIIMkQGWFTqIuu84lYOoxlO8KS7CZo"
 TELEGRAM_CHAT_ID = "@swingTradeScreenedStocks"
 RSI_PERIOD = 14
-RSI_OVERBOUGHT = 70
-RSI_OVERSOLD = 30
+RSI_OVERBOUGHT = 65
+RSI_OVERSOLD = 35
 
 
 def calculate_zones(data, window=10):
@@ -90,10 +90,10 @@ def notify_action(index, price, zone_type, zone_price, action, nearest_strike, e
     ist_now = utc_now.astimezone(timezone('Asia/Kolkata'))
     timestamp = ist_now.strftime("%d-%m-%Y %H:%M")
     message = (
-        f"**** NOTIFIED AT : {timestamp} ****\n"
         f"=====================\n"
         f"DEMAND & SUPPLY ZONES\n"
         f"=====================\n"
+        f"Notified At : {timestamp}\n"
         f"ALERT: {index}\n"
         f"Current Price: {price:.2f}\n"
         f"Near {zone_type} Zone at: {zone_price:.2f}\n"
@@ -130,9 +130,10 @@ def check_market_conditions():
             print("RSI : ",correct_rsi)
             # Calculate supply and demand zones
             supply_zone, demand_zone = calculate_zones(data, window=SUPPLY_DEMAND_ZONE_WINDOW)
-            positive_zone_buffer = round(demand_zone * (1 + ZONE_BUFFER),2)
-            negative_zone_buffer = round(supply_zone * (1 - ZONE_BUFFER),2)
-            print(f"positive_zone_buffer : {positive_zone_buffer}, negative_zone_buffer : {negative_zone_buffer}")
+            positive_supply_zone_buffer = round(supply_zone * (1 + ZONE_BUFFER),2)
+            negative_supply_zone_buffer = round(supply_zone * (1 - ZONE_BUFFER),2)
+            positive_demand_zone_buffer = round(demand_zone * (1 + ZONE_BUFFER),2)
+            negative_demand_zone_buffer = round(demand_zone * (1 - ZONE_BUFFER),2)
             # Fetch live price
             live_price = round(get_live_price(data),2)
             step = 50 if index == "^NSEI" else 100
@@ -141,9 +142,11 @@ def check_market_conditions():
             data_dic = {"Index =":index,
                         "currentTime =":current_time,
                         "cmp =": live_price,
-                        "negative_buffer_zone =": negative_zone_buffer,
+                        "negative_demand_buffer_zone =": negative_demand_zone_buffer,
+                        "positive_demand_buffer_zone =": positive_demand_zone_buffer,
+                        "negative_supply_buffer_zone =": negative_supply_zone_buffer,
+                        "positive_supply_buffer_zone =": positive_supply_zone_buffer,
                         "demand_zone =":demand_zone,
-                        "positive_buffer_zone =":positive_zone_buffer,
                         "supply_zone =":supply_zone,
                         "21EMA =":float(ema),
                         "RSI =":float(correct_rsi)
@@ -153,9 +156,10 @@ def check_market_conditions():
             print("********************* DATA PRINT ENDED ***********************")
     
             # Check proximity to zones and EMA conditions
-            if live_price in (supply_zone , negative_zone_buffer) and live_price < ema and correct_rsi > RSI_OVERBOUGHT:
+            # Removing ema condn  and live_price < ema in if and and live_price > ema in else
+            if live_price in (negative_supply_zone_buffer , positive_supply_zone_buffer) and correct_rsi > RSI_OVERBOUGHT:
                 notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, correct_rsi)
-            elif live_price in (demand_zone , positive_zone_buffer) and live_price > ema and correct_rsi < RSI_OVERSOLD:
+            elif live_price in (negative_demand_zone_buffer , positive_demand_zone_buffer) and correct_rsi < RSI_OVERSOLD:
                 notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema, correct_rsi)
             else:
                 print(f"{index} is not near any zone or doesn't satisfy EMA condition.")
