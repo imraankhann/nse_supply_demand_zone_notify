@@ -125,7 +125,7 @@ def check_market_conditions():
             ema_data = calculate_ema(data, EMA_PERIOD)
             ema = round(ema_data[f"EMA_{EMA_PERIOD}"].iloc[-1],2)
             rsi_data = calculate_rsi(data,14)
-            correct_rsi = round(rsi_data['RSI'].iloc[-1], 2)
+            correct_rsi = float(round(rsi_data['RSI'].iloc[-1], 2))
             #correct_rsi = rsi - 15
             print("RSI : ",correct_rsi)
             # Calculate supply and demand zones
@@ -157,10 +157,10 @@ def check_market_conditions():
     
             # Check proximity to zones and EMA conditions
             # Removing ema condn  and live_price < ema in if and and live_price > ema in else
-            if live_price in (negative_supply_zone_buffer , positive_supply_zone_buffer) and correct_rsi > RSI_OVERBOUGHT:
-                notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, correct_rsi)
-            elif live_price in (negative_demand_zone_buffer , positive_demand_zone_buffer) and correct_rsi < RSI_OVERSOLD:
+            if negative_demand_zone_buffer <= live_price <= positive_demand_zone_buffer and correct_rsi < RSI_OVERSOLD:
                 notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema, correct_rsi)
+            elif negative_supply_zone_buffer <= live_price <= positive_supply_zone_buffer and correct_rsi > RSI_OVERBOUGHT:
+                notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, correct_rsi)
             else:
                 print(f"{index} is not near any zone or doesn't satisfy EMA condition.")
     else:
