@@ -153,7 +153,7 @@ def check_market_conditions():
                 "Index =": index,
                 "Current Time =": current_time,
                 "CMP =": live_price,
-                "21 EMA =": ema,
+                "5 EMA =": ema,
                 "ADX =": adx,
                 "Lower Band =": lower_band,
                 "Upper Band =": upper_band,
