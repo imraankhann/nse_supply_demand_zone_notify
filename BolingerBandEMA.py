@@ -79,8 +79,6 @@ def get_current_adx(data, period=14):
     utc_now = datetime.now(timezone('UTC'))
     ist_now = utc_now.astimezone(timezone('Asia/Kolkata'))
     timestamp = ist_now.strftime("%d-%m-%Y %H:%M:%S")
-    
-    print(f"Current ADX value: {current_adx} at {timestamp} IST")
     return current_adx
 
 def send_telegram_message(message):
@@ -140,7 +138,10 @@ def check_market_conditions():
             bollinger_data = calculate_bollinger_bands(data, BOLLINGER_PERIOD)
             lower_band = round(bollinger_data['Lower_Band'].iloc[-1], 2)
             upper_band = round(bollinger_data['Upper_Band'].iloc[-1], 2)
-
+            lower_band_minus = lower_band - 20
+            lower_band_plus = lower_band + 20
+            upper_band_minus = upper_band - 20
+            upper_band_plus = upper_band + 20
             adr = get_current_adr(data)
             adx = get_current_adx(data, period=14)
 
@@ -164,9 +165,9 @@ def check_market_conditions():
             print("********************* DATA PRINT ENDED ***********************")
 
             
-            if live_price < ema and (lower_band - 20) <= live_price <= (lower_band + 20) and adx > 23 :
+            if live_price < ema and (lower_band_minus) <= live_price <= (lower_band_plus) and adx > 23 :
                 notify_action(index, live_price, "CE", nearest_strike, ema, adx, lower_band, upper_band)
-            elif live_price > ema and (upper_band - 20 <= live_price <= upper_band + 20) and adx > 23 : 
+            elif live_price > ema and (upper_band_minus <= live_price <= upper_band_plus) and adx > 23 : 
                 notify_action(index, live_price, "PE", nearest_strike, ema, adx, lower_band, upper_band ) 
             else:
                 print(f"{index} is not near any bollinger bands or doesn't satisfy EMA or ADX conditions")
