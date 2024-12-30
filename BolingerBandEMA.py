@@ -31,7 +31,7 @@ def get_nearest_strike_price(index_price, step):
     """Calculate the nearest strike price for a given index price."""
     return round(index_price / step) * step
 
-def calculate_ema(data, period=21):
+def calculate_ema(data, period=5):
     """Calculate EMA for the data."""
     data[f"EMA_{period}"] = data['Close'].ewm(span=period, adjust=False).mean()
     return data
@@ -117,7 +117,7 @@ def check_market_conditions():
     """Check market conditions and send alerts."""
     IST = pytz.timezone("Asia/Kolkata")
     current_time = datetime.now(IST).time()
-    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("14:45", "%H:%M").time():
+    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("12:45", "%H:%M").time():
         print("Market is open in IST timezone : ", current_time)
         for index in INDEXES:
             # Fetch historical data
@@ -155,7 +155,7 @@ def check_market_conditions():
                 "Current Time =": current_time,
                 "CMP =": live_price,
                 "5 EMA =": ema,
-                "ADX =": adx,
+                "ADR =": adr,
                 "Lower Band =": lower_band,
                 "Upper Band =": upper_band,
                 "ADX = ": adx
@@ -182,10 +182,10 @@ if __name__ == "__main__":
     current_time = now_asia.strftime("%H:%M:%S")
     intTime = int(now_asia.strftime("%H"))  # Update hour dynamically
     print(f"Current Time: {current_time} | Monitoring Demand And Supply Zones...")
-    while intTime>=9 and intTime <=14:
+    while intTime>=9 and intTime <=13:
         check_market_conditions()
         #schedule.run_pending()
-        if intTime >= 14:  # Exit after 2 PM
+        if intTime >= 12:  # Exit after 2 PM
             print("Market is closed. Program exiting at:", current_time)
             break
         time.sleep(180)
