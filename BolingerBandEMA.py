@@ -185,7 +185,7 @@ if __name__ == "__main__":
     while intTime>=9 and intTime <=13:
         check_market_conditions()
         #schedule.run_pending()
-        if intTime >= 12:  # Exit after 2 PM
+        if intTime >= 13:  # Exit after 2 PM
             print("Market is closed. Program exiting at:", current_time)
             break
         time.sleep(180)
