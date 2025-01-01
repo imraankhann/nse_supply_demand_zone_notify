@@ -138,10 +138,10 @@ def check_market_conditions():
             bollinger_data = calculate_bollinger_bands(data, BOLLINGER_PERIOD)
             lower_band = round(bollinger_data['Lower_Band'].iloc[-1], 2)
             upper_band = round(bollinger_data['Upper_Band'].iloc[-1], 2)
-            lower_band_minus = lower_band - 20
-            lower_band_plus = lower_band + 20
-            upper_band_minus = upper_band - 20
-            upper_band_plus = upper_band + 20
+            lower_band_minus = lower_band - 15
+            lower_band_plus = lower_band + 15
+            upper_band_minus = upper_band - 15
+            upper_band_plus = upper_band + 15
             adr = get_current_adr(data)
             adx = get_current_adx(data, period=14)
 
