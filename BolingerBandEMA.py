@@ -117,7 +117,7 @@ def check_market_conditions():
     """Check market conditions and send alerts."""
     IST = pytz.timezone("Asia/Kolkata")
     current_time = datetime.now(IST).time()
-    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("13:00", "%H:%M").time():
+    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("13:59", "%H:%M").time():
         print("Market is open in IST timezone : ", current_time)
         for index in INDEXES:
             # Fetch historical data
@@ -138,10 +138,10 @@ def check_market_conditions():
             bollinger_data = calculate_bollinger_bands(data, BOLLINGER_PERIOD)
             lower_band = round(bollinger_data['Lower_Band'].iloc[-1], 2)
             upper_band = round(bollinger_data['Upper_Band'].iloc[-1], 2)
-            lower_band_minus = lower_band - 15
-            lower_band_plus = lower_band + 15
-            upper_band_minus = upper_band - 15
-            upper_band_plus = upper_band + 15
+            lower_band_minus = lower_band - 10
+            lower_band_plus = lower_band + 10
+            upper_band_minus = upper_band - 10
+            upper_band_plus = upper_band + 10
             adr = get_current_adr(data)
             adx = get_current_adx(data, period=14)
 
@@ -165,7 +165,7 @@ def check_market_conditions():
             print("********************* DATA PRINT ENDED ***********************")
 
             
-            if live_price < ema and (lower_band_minus) <= live_price <= (lower_band_plus) and adx > 23 :
+            if live_price < ema and (lower_band_minus <= live_price <= lower_band_plus) and adx > 23 :
                 notify_action(index, live_price, "CE", nearest_strike, ema, adx, lower_band, upper_band)
             elif live_price > ema and (upper_band_minus <= live_price <= upper_band_plus) and adx > 23 : 
                 notify_action(index, live_price, "PE", nearest_strike, ema, adx, lower_band, upper_band ) 
