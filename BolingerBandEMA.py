@@ -167,8 +167,10 @@ def check_market_conditions():
             
             if live_price < ema and (lower_band_minus <= live_price <= lower_band_plus) and adx > 23 :
                 notify_action(index, live_price, "CE", nearest_strike, ema, adx, lower_band, upper_band)
+                time.sleep(120)
             elif live_price > ema and (upper_band_minus <= live_price <= upper_band_plus) and adx > 23 : 
-                notify_action(index, live_price, "PE", nearest_strike, ema, adx, lower_band, upper_band ) 
+                notify_action(index, live_price, "PE", nearest_strike, ema, adx, lower_band, upper_band) 
+                time.sleep(120)
             else:
                 print(f"{index} is not near any bollinger bands or doesn't satisfy EMA or ADX conditions")
     else:
