@@ -67,6 +67,20 @@ def calculate_adx(data, period=14):
     data['ADX'] = adx_indicator.adx()
     return data
 
+def moving_average_crossover_strategy(df):
+    short_window = 5  # 5-period moving average
+    long_window = 20  # 20-period moving average
+
+    df['SMA_short'] = df['Close'].rolling(window=short_window).mean()
+    df['SMA_long'] = df['Close'].rolling(window=long_window).mean()
+
+    # Signal generation
+    df['signal'] = 0
+    df.loc[df['SMA_short'] > df['SMA_long'], 'signal'] = 1  # Buy signal (Call)
+    df.loc[df['SMA_short'] < df['SMA_long'], 'signal'] = -1  # Sell signal (Put)
+
+    return df
+
 def get_current_adx(data, period=14):
     """Fetch the current ADX value in IST timezone."""
     # Calculate ADX for the data
@@ -113,11 +127,12 @@ def notify_action(index, price, action, nearest_strike, ema, adx, lower_band, up
     print(message)
     send_telegram_message(message)
 
+
 def check_market_conditions():
     """Check market conditions and send alerts."""
     IST = pytz.timezone("Asia/Kolkata")
     current_time = datetime.now(IST).time()
-    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("13:59", "%H:%M").time():
+    if current_time >= datetime.strptime("09:15", "%H:%M").time() and current_time <= datetime.strptime("14:00", "%H:%M").time():
         print("Market is open in IST timezone : ", current_time)
         for index in INDEXES:
             # Fetch historical data
@@ -131,7 +146,11 @@ def check_market_conditions():
             # Calculate technical indicators
             ema_data = calculate_ema(data, EMA_PERIOD)
             ema = round(ema_data[f"EMA_{EMA_PERIOD}"].iloc[-1], 2)
-
+            sma = moving_average_crossover_strategy(data)
+            # Check the last signal
+            last_signal = data.iloc[-1]
+            print(last_signal)
+            signal_message = "No clear signal. Hold."
             #rsi_data = calculate_rsi(data, RSI_PERIOD)
             #correct_rsi = float(round(rsi_data['RSI'].iloc[-1], 2))
 
@@ -165,10 +184,10 @@ def check_market_conditions():
             print("********************* DATA PRINT ENDED ***********************")
 
             
-            if live_price < ema and (lower_band_minus <= live_price <= lower_band_plus) and adx > 23 :
+            if live_price < ema and (lower_band_minus <= live_price <= lower_band_plus) and adx > 23 and last_signal == 1:
                 notify_action(index, live_price, "CE", nearest_strike, ema, adx, lower_band, upper_band)
                 time.sleep(120)
-            elif live_price > ema and (upper_band_minus <= live_price <= upper_band_plus) and adx > 23 : 
+            elif live_price > ema and (upper_band_minus <= live_price <= upper_band_plus) and adx > 23 and last_signal == -1: 
                 notify_action(index, live_price, "PE", nearest_strike, ema, adx, lower_band, upper_band) 
                 time.sleep(120)
             else:
@@ -184,10 +203,10 @@ if __name__ == "__main__":
     current_time = now_asia.strftime("%H:%M:%S")
     intTime = int(now_asia.strftime("%H"))  # Update hour dynamically
     print(f"Current Time: {current_time} | Monitoring BollingerBands, EMA, ADX Zones...")
-    while intTime>=9 and intTime <=13:
+    while intTime>=9 and intTime <=14:
         check_market_conditions()
         #schedule.run_pending()
-        if intTime > 13:  # Exit after 2 PM
+        if intTime > 14:  # Exit after 2 PM
             print("Market is closed. Program exiting at:", current_time)
             break
         time.sleep(180)
