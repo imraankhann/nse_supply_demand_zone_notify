@@ -159,8 +159,10 @@ def check_market_conditions():
             # Removing ema condn  and live_price < ema in if and and live_price > ema in else
             if negative_demand_zone_buffer <= live_price <= positive_demand_zone_buffer and correct_rsi < RSI_OVERSOLD:
                 notify_action(index, live_price, "demand", demand_zone, "CE", nearest_strike, ema, correct_rsi)
+                time.sleep(120)
             elif negative_supply_zone_buffer <= live_price <= positive_supply_zone_buffer and correct_rsi > RSI_OVERBOUGHT:
                 notify_action(index, live_price, "supply", supply_zone, "PE", nearest_strike, ema, correct_rsi)
+                time.sleep(120)
             else:
                 print(f"{index} is not near any zone or doesn't satisfy EMA condition.")
     else:
