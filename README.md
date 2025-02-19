@@ -8,3 +8,11 @@ python3.10 -m venv venv
 source venv/bin/activate
 pip install ta-lib
 -------------------------------------------------------------------
+
+To Resolve YFinance Rate limit issue
+-------------------------------------------------------------------
+Run below commands
+Upgrade yfinance to latest version
+
+pip install --upgrade yfinance==0.2.54
+
